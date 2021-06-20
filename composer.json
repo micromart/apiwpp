@@ -1,0 +1,63 @@
+{
+    "name": "tiagofv/zapi",
+    "description": "Integration with whatapp api z-api",
+    "keywords": [
+        "Tiagofv",
+        "laravel",
+        "zapi"
+    ],
+    "homepage": "https://github.com/tiagofv/zapi",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "tiagofvx",
+            "email": "tiagofvx@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.4",
+        "guzzlehttp/guzzle": "^7.3",
+        "illuminate/contracts": "^8.37",
+        "spatie/laravel-package-tools": "^1.4.3"
+    },
+    "require-dev": {
+        "brianium/paratest": "^6.2",
+        "nunomaduro/collision": "^5.3",
+        "orchestra/testbench": "^6.15",
+        "phpunit/phpunit": "^9.3",
+        "spatie/laravel-ray": "^1.9",
+        "vimeo/psalm": "^4.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tiagofv\\ZApi\\": "src",
+            "Tiagofv\\ZApi\\Database\\Factories\\": "database/factories"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tiagofv\\ZApi\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "psalm": "vendor/bin/psalm",
+        "test": "./vendor/bin/testbench package:test --parallel --no-coverage",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Tiagofv\\ZApi\\ZApiServiceProvider"
+            ],
+            "aliases": {
+                "ZApi": "Tiagofv\\ZApi\\ZApiFacade"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
