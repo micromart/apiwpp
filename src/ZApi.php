@@ -3,6 +3,7 @@
 namespace Tiagofv\ZApi;
 
 use GuzzleHttp\Client;
+// use GuzzleHttp\Psr7;
 
 class ZApi
 {
@@ -29,7 +30,7 @@ class ZApi
     /**
      * @var array
      */
-    private $allowedExtensions = ['pdf', 'docx', 'doc', 'xlsx', 'deb', 'gz', '7z', 'zip'];
+    private $allowedExtensions = ['pdf', 'docx', 'doc', 'xlsx', 'deb', 'gz', '7z', 'zip', 'png', 'jpg'];
 
     /**
      * ZApi constructor.
@@ -40,7 +41,9 @@ class ZApi
     {
         $this->instanceId = $instanceId;
         $this->tokenId = $tokenId;
-        $this->baseUrl = "https://api.z-api.io/instances/{$instanceId}/token/{$tokenId}/";
+        // $this->baseUrl = "https://api.z-api.io/instances/{$instanceId}/token/{$tokenId}/";
+        //NOVA API
+        $this->baseUrl = "http://sat.wppbox.com/api/{$instanceId}/";
     }
 
     /**
@@ -53,12 +56,14 @@ class ZApi
             'base_uri' => $this->baseUrl,
             'headers' => [
                 'content-type' => 'application/json',
+                'Authorization' => 'Bearer '.$this->tokenId,
             ],
             'body' => json_encode($formData),
         ]);
 
         return $client;
     }
+   
 
     public function doRequest(string $method, string $url, array $data)
     {
@@ -76,8 +81,40 @@ class ZApi
         return json_decode($response->getBody()->getContents());
     }
 
-    // Instance related
+    private function getClient2(array $formData = []): Client
+    {
+        $client = new Client([
+            'base_uri' => $this->baseUrl,
+            'headers' => [
+                
+                'Authorization' => 'Bearer $2b$10$1NHafJsSPPnrOiRg7WfMAuIGR_ieRHLykHiHNBigzy5a6nv.PH61O',
+            ]
+        ]);
 
+        return $client;
+    }
+
+    public function doRequest2(string $method, string $url, array $data)
+    {
+        $method = strtoupper($method);
+        $allowedHttpVerbs = $this->allowedHttpVerbs;
+        if (! in_array($method, $allowedHttpVerbs)) {
+            throw new \InvalidArgumentException(
+                "The supplied http method is invalid. Allowed values are " .
+                implode(',', $allowedHttpVerbs) . '. Supplied value: ' . $method
+            );
+        }
+
+        $response = $this->getClient2($data)->request($method, $url);
+
+        return json_decode($response->getBody()->getContents());
+    }
+
+    // Instance related
+    /**
+     * Generate Token
+     */
+    
     /**
      * Generates the qr code returns in bytes
      */
@@ -88,7 +125,12 @@ class ZApi
 
     public function generateQrCodeBase64()
     {
-        return $this->doRequest('GET', 'qr-code/image', []);
+        return $this->doRequest('POST', 'start-session', []);
+    }
+
+    public function logoutSession()
+    {
+        return $this->doRequest('POST', 'logout-session', []);
     }
 
     /**
@@ -104,7 +146,7 @@ class ZApi
      */
     public function disconnect()
     {
-        return $this->doRequest('GET', 'disconnect', []);
+        return $this->doRequest('POST', 'close-session', []);
     }
 
     /**
@@ -112,7 +154,7 @@ class ZApi
      */
     public function status()
     {
-        return $this->doRequest('GET', 'status', []);
+        return $this->doRequest('GET', 'check-connection-session', []);
     }
 
     /**
@@ -398,10 +440,67 @@ class ZApi
     public function createGroup(string $groupName, array $phones = [])
     {
         return $this->doRequest('POST', "create-group", [
-            'phones' => $phones,
-            'groupName' => $groupName,
+            'name' => $groupName,
+            'participants' => $phones
+            
         ]);
     }
+
+    /**DEFINIR DESCRICAO DO GRUPO */
+
+    public function setGroupDescription(string $groupId, string $description)
+    {
+        return $this->doRequest('POST', "group-description", [
+            'groupId' => $groupId,
+            'description' => $description
+            
+        ]);
+    }
+
+    /**PERMISSAO DE ENVIO DE MENSAGENS DO GRUPO */
+
+    public function setGroupMessages(string $groupId, string $value)
+    {
+        return $this->doRequest('POST', "messages-admins-only", [
+            'groupId' => $groupId,
+            'value' => $value
+            
+        ]);
+    }
+
+    /**PERMISSAO DE EDIÇÃO DO GRUPO */
+
+    public function setGroupEdit(string $groupId, string $value)
+    {
+        return $this->doRequest('POST', "group-property", [
+            'groupId' => $groupId,
+            'property' => 'restrict',
+            'value' => $value
+            
+        ]);
+    }
+
+    //  /**IMAGEM DO GRUPO */
+
+    //  public function groupImage(string $groupId, string $value)
+    //  {
+    //      return $this->doRequest('POST', "group-pic", [
+    //         'multipart' => [
+    //             [                    
+    //                 'name' => 'phone',
+    //                 'contents' => $groupId,                    
+    //             ],
+    //             [
+                    
+    //                 'name' => 'file',
+    //                 'contents' => Psr7\Utils::tryFopen('storage'. $value, 'r'),
+    //             ]
+             
+    //            ]
+             
+    //      ]);
+    //  }
+
 
     /**
      *  Updates a group name
@@ -409,11 +508,11 @@ class ZApi
      * @param array $groupId id of the group
      * @return string
      */
-    public function updateGroupName(string $groupName, array $groupId)
+    public function updateGroupName(string $groupName, string $groupId)
     {
-        return $this->doRequest('POST', "update-group-name", [
-            'groupName' => $groupName,
+        return $this->doRequest('POST', "group-subject", [
             'groupId' => $groupId,
+            'title' => $groupName,
         ]);
     }
 
@@ -427,10 +526,10 @@ class ZApi
     {
         return $this->doRequest(
             'POST',
-            "add-admin",
+            "promote-participant-group",
             [
-                'phones' => $phones,
                 'groupId' => $groupId,
+                'phone' => $phones,                
             ]
         );
     }
@@ -463,10 +562,10 @@ class ZApi
     {
         return $this->doRequest(
             'POST',
-            "add-participant",
+            "add-participant-group",
             [
-                'phones' => $phones,
                 'groupId' => $groupId,
+                'phone' => $phones,                
             ]
         );
     }
@@ -513,6 +612,41 @@ class ZApi
     public function getGroupMetadata(string $groupPhoneId)
     {
         return $this->doRequest('GET', "group-metadata/" . $groupPhoneId, []);
+    }
+
+    /**
+     * Gets group data
+     * @param string $groupPhoneId phone + id of the group
+     * @return string
+     */
+    public function getGroupData(string $groupPhoneId)
+    {
+        return $this->doRequest('POST', "group-info-from-invite-link/",
+        [
+            'invitecode' => $groupPhoneId,
+        ]
+    );
+}
+
+    /**
+     * Gets group invitelink
+     * @param string $groupPhoneId phone + id of the group
+     * @return string
+     */
+    public function getGroupInvite(string $groupPhoneId)
+    {
+        return $this->doRequest('GET', "group-invite-link/" . $groupPhoneId, []);
+    }
+    /**
+     * Send message to group
+     */
+    public function sendGroupText(string $phone, string $message)
+    {
+        return $this->doRequest('POST', 'send-message', [
+            'phone' => $phone,
+            'message' => $message,
+            'isGroup' => true
+        ]);
     }
 
     // end group related
