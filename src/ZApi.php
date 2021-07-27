@@ -3,6 +3,7 @@
 namespace Tiagofv\ZApi;
 
 use GuzzleHttp\Client;
+
 // use GuzzleHttp\Psr7;
 
 class ZApi
@@ -63,7 +64,6 @@ class ZApi
 
         return $client;
     }
-   
 
     public function doRequest(string $method, string $url, array $data)
     {
@@ -88,7 +88,7 @@ class ZApi
             'headers' => [
                 
                 'Authorization' => 'Bearer $2b$10$1NHafJsSPPnrOiRg7WfMAuIGR_ieRHLykHiHNBigzy5a6nv.PH61O',
-            ]
+            ],
         ]);
 
         return $client;
@@ -441,7 +441,7 @@ class ZApi
     {
         return $this->doRequest('POST', "create-group", [
             'name' => $groupName,
-            'participants' => $phones
+            'participants' => $phones,
             
         ]);
     }
@@ -452,7 +452,7 @@ class ZApi
     {
         return $this->doRequest('POST', "group-description", [
             'groupId' => $groupId,
-            'description' => $description
+            'description' => $description,
             
         ]);
     }
@@ -463,7 +463,7 @@ class ZApi
     {
         return $this->doRequest('POST', "messages-admins-only", [
             'groupId' => $groupId,
-            'value' => $value
+            'value' => $value,
             
         ]);
     }
@@ -475,7 +475,7 @@ class ZApi
         return $this->doRequest('POST', "group-property", [
             'groupId' => $groupId,
             'property' => 'restrict',
-            'value' => $value
+            'value' => $value,
             
         ]);
     }
@@ -486,9 +486,9 @@ class ZApi
     //  {
     //      return $this->doRequest('POST', "group-pic", [
     //         'multipart' => [
-    //             [                    
+    //             [
     //                 'name' => 'phone',
-    //                 'contents' => $groupId,                    
+    //                 'contents' => $groupId,
     //             ],
     //             [
                     
@@ -500,7 +500,6 @@ class ZApi
              
     //      ]);
     //  }
-
 
     /**
      *  Updates a group name
@@ -529,7 +528,7 @@ class ZApi
             "promote-participant-group",
             [
                 'groupId' => $groupId,
-                'phone' => $phones,                
+                'phone' => $phones,
             ]
         );
     }
@@ -565,7 +564,7 @@ class ZApi
             "add-participant-group",
             [
                 'groupId' => $groupId,
-                'phone' => $phones,                
+                'phone' => $phones,
             ]
         );
     }
@@ -621,12 +620,14 @@ class ZApi
      */
     public function getGroupData(string $groupPhoneId)
     {
-        return $this->doRequest('POST', "group-info-from-invite-link/",
-        [
+        return $this->doRequest(
+            'POST',
+            "group-info-from-invite-link/",
+            [
             'invitecode' => $groupPhoneId,
         ]
-    );
-}
+        );
+    }
 
     /**
      * Gets group invitelink
@@ -637,6 +638,7 @@ class ZApi
     {
         return $this->doRequest('GET', "group-invite-link/" . $groupPhoneId, []);
     }
+
     /**
      * Send message to group
      */
@@ -645,7 +647,7 @@ class ZApi
         return $this->doRequest('POST', 'send-message', [
             'phone' => $phone,
             'message' => $message,
-            'isGroup' => true
+            'isGroup' => true,
         ]);
     }
 
